@@ -45,12 +45,13 @@ public class Cell {
     public int getCol() {
         return col;
     }
-    public void setMines(int mines){
-        this.mines = mines;
-    }
     public void setToMine(){
         isMine = true;
         declareCellMineForNeighbors(this);
+    }
+    public void setToFree(int mines){
+        this.mines = mines;
+        declareCellFreeForNeighbors(this);
     }
     public boolean isSolved(){
         return solved;
@@ -96,7 +97,10 @@ public class Cell {
     public List<Cell> allUnknownFree(){
         List<Cell> result = new ArrayList<>();
         if (mines == mineNeighbours.size()){ // all mines are identified
-            unknownNeighbours.forEach(this::setCellFree);
+            result.addAll(unknownNeighbours);
+            freeNeighbours.addAll(unknownNeighbours);
+            unknownNeighbours.clear();
+            result.forEach(this::declareCellFreeForNeighbors);
             solved = true;
         }
         return result;
@@ -105,8 +109,10 @@ public class Cell {
     public List<Cell> allUnknownMines(){
         List<Cell> result = new ArrayList<>();
         if (getUnknownMines() == unknownNeighbours.size()){
-            unknownNeighbours.forEach(this::setCellMine);
-            solved = true;
+            result.addAll(unknownNeighbours);
+            mineNeighbours.addAll(unknownNeighbours);
+            unknownNeighbours.clear();
+            result.forEach(this::declareCellMineForNeighbors);
         }
         return result;
     }

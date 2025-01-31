@@ -121,7 +121,7 @@ class MineSweeper {
             System.out.println("opening empty field " + found);
             int mines = Game.open(found.getRow(), found.getCol());
             board[found.getRow()][found.getCol()] = "" + mines;
-            found.setMines(mines);
+            found.setToFree(mines);
             System.out.println(mines + " mines around empty field " + found);
         }
     }
