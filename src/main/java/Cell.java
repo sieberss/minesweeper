@@ -1,10 +1,12 @@
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Cell {
     private final int row;
     private final int col;
+    private boolean solved;
     private boolean isMine = false;
     private int mines = -1;
     private final List<Cell> freeNeighbours = new ArrayList<>();
@@ -15,21 +17,26 @@ public class Cell {
         this.row = row;
         this.col = col;
         switch (boardEntry){
-            case "x": isMine = true; break;
+            case "x": isMine = true; solved = true; break;
             case "?": break;
             default : mines = Integer.parseInt(boardEntry); break;
         }
     }
 
-    public void setNeighbours(List<Cell> neighbours) {
-        for (Cell neighbour : neighbours) {
-            if (neighbour.isMine)
-                mineNeighbours.add(neighbour);
-            else if (neighbour.getUnknowns() < 0)
-                unknownNeighbours.add(neighbour);
-            else
-                freeNeighbours.add(neighbour);
-        }
+    public void addUnknownNeighbour(Cell cell) {
+        unknownNeighbours.add(cell);
+    }
+    public void addMineNeighbour(Cell cell) {
+        mineNeighbours.add(cell);
+    }
+    public void addFreeNeighbour(Cell cell) {
+        freeNeighbours.add(cell);
+    }
+    public List<Cell> getMinesList(){
+        return mineNeighbours;
+    }
+    public List<Cell> getEmptyFieldsList(){
+        return freeNeighbours;
     }
 
     public int getRow() {
@@ -43,12 +50,10 @@ public class Cell {
     }
     public void setToMine(){
         isMine = true;
+        declareCellMineForNeighbors(this);
     }
     public boolean isSolved(){
-        return isMine || unknownNeighbours.isEmpty();
-    }
-    public int getUnknowns() {
-        return unknownNeighbours.size();
+        return solved;
     }
     public int getUnknownMines(){
         return mines - mineNeighbours.size();
@@ -68,31 +73,31 @@ public class Cell {
         if (unknownNeighbours.contains(cell)){
             unknownNeighbours.remove(cell);
             mineNeighbours.add(cell);
+            declareCellMineForNeighbors(cell);
         }
     }
     public void setCellFree(Cell cell){
         if(unknownNeighbours.contains(cell)){
             unknownNeighbours.remove(cell);
             freeNeighbours.add(cell);
+            declareCellFreeForNeighbors(cell);
         }
     }
 
     public void declareCellFreeForNeighbors(Cell cell){
         freeNeighbours.forEach(neighbor -> neighbor.setCellFree(cell));
+        unknownNeighbours.forEach(neighbour -> neighbour.setCellFree(cell));
     }
     public void declareCellMineForNeighbors(Cell cell){
         freeNeighbours.forEach(neighbor -> neighbor.setCellMine(cell));
+        unknownNeighbours.forEach(neighbour -> neighbour.setCellMine(cell));
     }
 
     public List<Cell> allUnknownFree(){
         List<Cell> result = new ArrayList<>();
         if (mines == mineNeighbours.size()){ // all mines are identified
-            for (Cell cell : unknownNeighbours){
-                freeNeighbours.add(cell);
-                result.add(cell);
-                declareCellFreeForNeighbors(cell);
-            }
-            unknownNeighbours.clear();
+            unknownNeighbours.forEach(this::setCellFree);
+            solved = true;
         }
         return result;
     }
@@ -100,12 +105,8 @@ public class Cell {
     public List<Cell> allUnknownMines(){
         List<Cell> result = new ArrayList<>();
         if (getUnknownMines() == unknownNeighbours.size()){
-            for (Cell cell : unknownNeighbours){
-                mineNeighbours.add(cell);
-                result.add(cell);
-                declareCellMineForNeighbors(cell);
-            }
-            unknownNeighbours.clear();
+            unknownNeighbours.forEach(this::setCellMine);
+            solved = true;
         }
         return result;
     }
@@ -116,12 +117,7 @@ public class Cell {
                 List<Cell> remaining = other.getAdditionalCells(unknownNeighbours);
                 int mineDifference = getUnknownMines() - other.getUnknownMines();
                 if (!remaining.isEmpty() && remaining.size() == mineDifference){
-                    for (Cell cell : remaining){
-                        mineNeighbours.add(cell);
-                        unknownNeighbours.remove(cell);
-                        declareCellMineForNeighbors(cell);
-                        // cell.setToMine();
-                    }
+                    remaining.forEach(this::setCellMine);
                     return remaining;
                 }
             }
@@ -135,11 +131,7 @@ public class Cell {
                 List<Cell> remaining = other.getAdditionalCells(unknownNeighbours);
                 int freeDifference = getUnknownFree() - other.getUnknownFree();
                 if (!remaining.isEmpty() && remaining.size() == freeDifference){
-                    for (Cell cell : remaining){
-                        freeNeighbours.add(cell);
-                        unknownNeighbours.remove(cell);
-                        declareCellFreeForNeighbors(cell);
-                    }
+                    remaining.forEach(this::setCellFree);
                     return remaining;
                 }
             }
@@ -154,9 +146,17 @@ public class Cell {
                 ", col=" + col +
                 ", isMine=" + isMine +
                 ", mines=" + mines +
-                ", freeNeighbours=" + freeNeighbours +
-                ", mineNeighbours=" + mineNeighbours +
-                ", unknownNeighbours=" + unknownNeighbours +
+                ", freeNeighbours=" + getListString(freeNeighbours) +
+                ", mineNeighbours=" + getListString(mineNeighbours) +
+                ", unknownNeighbours=" + getListString(unknownNeighbours) +
                 '}';
+    }
+
+    private String getListString(List<Cell> list){
+        return "{"
+                + list.stream()
+                    .map(cell -> "(" + cell.getRow() + "," + cell.getCol() + ")")
+                    .collect(Collectors.joining(", "))
+                + "}";
     }
 }

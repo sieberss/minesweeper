@@ -7,7 +7,7 @@ class MineSweeper {
 
     private final String[][] board;
     private final int totalMines;
-    private int foundMines;
+    private final Set<Cell> foundMines = new HashSet<>();
     private final Cell[][] cells;
 
     public MineSweeper(final String s, final int nMines) {
@@ -15,21 +15,33 @@ class MineSweeper {
         board = Stream.of(s.split("\n"))
                 .map(line -> line.split(" "))
                 .toArray(String[][]::new);
-        foundMines = (int) Arrays.stream(board)
-                .flatMap(Arrays::stream)
-                .filter(cell -> cell.equals("x"))
-                .count();
         cells = new Cell[board.length][board[0].length];
         // define cells
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {
-                cells[i][j] = new Cell(i, j, board[i][j]);
+                Cell created = new Cell(i, j, board[i][j]);
+                if (board[i][j].equals("x"))
+                    foundMines.add(created);
+                cells[i][j] = created;
             }
         }
         // tell cells about their neighbors
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {
-                cells[i][j].setNeighbours(getNeighbors(i, j));
+                addNeighbours(i, j);
+                System.out.println(cells[i][j]);
+            }
+        }
+    }
+
+    private void addNeighbours(int i, int j) {
+        List<Cell> neighbours = getNeighbourCells(i, j);
+        System.out.println(neighbours);
+        for (Cell neighbour : neighbours) {
+            switch(board[neighbour.getRow()][neighbour.getCol()]){
+                case "x": cells[i][j].addMineNeighbour(neighbour); break;
+                case "?": cells[i][j].addUnknownNeighbour(neighbour); break;
+                default:  cells[i][j].addFreeNeighbour(neighbour); break;
             }
         }
     }
@@ -38,9 +50,11 @@ class MineSweeper {
         boolean updated;
         do {
             updated = checkCells();
+            System.out.println(getBoardString());
+            System.out.println(foundMines.size() + " mines discovered: " + foundMines);
         }
-        while (totalMines > foundMines && updated);
-        if (!updated) return "?";
+        while (totalMines > foundMines.size() && updated);
+        if (totalMines > foundMines.size()) return "?";
         openAllFields();
         return getBoardString();
     }
@@ -62,16 +76,19 @@ class MineSweeper {
     }
 
     boolean checkSingleCell(Cell cell, boolean updated) {
+        System.out.println("checking cell " + cell);
         // 1: all unknown neighbors are free cells
         List<Cell> list = cell.allUnknownFree();
         if (!list.isEmpty()) {
             addEmptyFields(list);
+            addMines(cell.getMinesList());
             return true;
         }
         // 2: all unknown neighbors are mines
         list = cell.allUnknownMines();
         if (!list.isEmpty()) {
             addMines(list);
+            addEmptyFields(cell.getEmptyFieldsList());
             return true;
         }
         // 3: some empty fields identified
@@ -91,20 +108,21 @@ class MineSweeper {
     }
 
     private void addMines(List<Cell> list) {
-        System.out.println("found mines: " + foundMines);
+        System.out.println("found mines: " + list);
         for (Cell found : list) {
             board[found.getRow()][found.getCol()] = "x";
             found.setToMine();
-            foundMines++;
+            foundMines.add(found);
         }
     }
 
     private void addEmptyFields(List<Cell> list) {
-        System.out.println("found empty fields: " + foundMines);
         for (Cell found : list) {
+            System.out.println("opening empty field " + found);
             int mines = Game.open(found.getRow(), found.getCol());
             board[found.getRow()][found.getCol()] = "" + mines;
             found.setMines(mines);
+            System.out.println(mines + " mines around empty field " + found);
         }
     }
 
@@ -116,7 +134,7 @@ class MineSweeper {
 
 
 
-    private List<Cell> getNeighbors(int row, int col) {
+    private List<Cell> getNeighbourCells(int row, int col) {
         List<Cell> neighbors = new ArrayList<>();
         int[][] indices = {{row-1, col-1}, {row-1, col}, {row-1, col+1}, {row, col-1}, {row, col+1},
                 {row+1, col-1}, {row+1, col}, {row+1, col+1}};
