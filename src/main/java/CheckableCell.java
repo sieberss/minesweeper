@@ -5,6 +5,17 @@ public class CheckableCell {
     int row;
     int col;
     int unknownMines;
+
+    @Override
+    public String toString() {
+        return "CheckableCell{" +
+                "row=" + row +
+                ", col=" + col +
+                ", unknownMines=" + unknownMines +
+                ", unknownNeighbors=" + unknownNeighbors +
+                '}';
+    }
+
     Set<Point> unknownNeighbors;
 
     public CheckableCell(int row, int col, int unknownMines, Set<Point> unknownNeighbors) {
