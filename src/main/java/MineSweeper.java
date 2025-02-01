@@ -47,16 +47,41 @@ class MineSweeper {
     }
 
     public String solve() {
+        iterateCellChecking();
+        if (totalMines > foundMines.size()) {
+            List<Cell> potentialFrees = getCellsWithThreeUnknownAndNoFreeNeighbors();
+            if (potentialFrees.size() == totalMines - foundMines.size()) {
+                // then all these cells are the free corner of a square of unknowns
+                addEmptyFields(potentialFrees);
+                iterateCellChecking();
+            }
+            else // these squares are undetermined
+                return "?";
+        }
+        openAllFields();
+        return getBoardString();
+    }
+
+    private List<Cell> getCellsWithThreeUnknownAndNoFreeNeighbors() {
+        List<Cell> result = new ArrayList<>();
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
+                if (board[i][j].equals("?") && cells[i][j].hasThreeUnknownAndNoFreeNeighbors()){
+                    result.add(cells[i][j]);
+                }
+            }
+        }
+        return result;
+    }
+
+    private void iterateCellChecking() {
         boolean updated;
         do {
             updated = checkCells();
             System.out.println(getBoardString());
-            System.out.println(foundMines.size() + " mines discovered: " + foundMines);
+            System.out.println(foundMines.size() + " mines of " + totalMines + " discovered: " + foundMines);
         }
         while (totalMines > foundMines.size() && updated);
-        if (totalMines > foundMines.size()) return "?";
-        openAllFields();
-        return getBoardString();
     }
 
     boolean checkCells() {
@@ -92,18 +117,25 @@ class MineSweeper {
             return true;
         }
         // 3: some empty fields identified
-        list = cell.foundNewFrees();
+        list = cell.foundNewFreesFromSubset();
         if (!list.isEmpty()) {
             addEmptyFields(list);
             return true;
         }
         // 4: some mines identified
-        list = cell.foundNewMines();
+        list = cell.foundNewMinesFromSubset();
         if (!list.isEmpty()) {
             addMines(list);
             return true;
         }
-        // 5: no updates on this cell
+        // 5: remaining mine also belongs to several non-neighbors
+        Cell mine = cell.singleMineFittingToOtherCells();
+        if (mine != null) {
+            addMines(List.of(mine));
+            addEmptyFields(cell.getEmptyFieldsList());
+        }
+
+        // 7: no updates on this cell
         return updated;
     }
 

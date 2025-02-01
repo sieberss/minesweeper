@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Cell {
@@ -117,7 +118,7 @@ public class Cell {
         return result;
     }
 
-    public List<Cell> foundNewMines(){
+    public List<Cell> foundNewMinesFromSubset(){
         for (Cell other : freeNeighbours){
             if (other.unknownNeighboursSubsetOf(unknownNeighbours)){
                 List<Cell> remaining = other.getAdditionalCells(unknownNeighbours);
@@ -131,7 +132,7 @@ public class Cell {
         return new ArrayList<>();
     }
 
-    public List<Cell> foundNewFrees(){
+    public List<Cell> foundNewFreesFromSubset(){
         for (Cell other : freeNeighbours){
             if (other.unknownNeighboursSubsetOf(unknownNeighbours)){
                 List<Cell> remaining = other.getAdditionalCells(unknownNeighbours);
@@ -143,6 +144,34 @@ public class Cell {
             }
         }
         return new ArrayList<>();
+    }
+
+    public Cell singleMineFittingToOtherCells(){
+        if (getUnknownMines() != 1)
+            return null;
+        Cell common = getMineCandidatesFittingToSecondNeighbours();
+        if (common != null){
+            solved = true;
+            setCellMine(common);
+            List<Cell> others = new ArrayList<>(unknownNeighbours);
+            freeNeighbours.addAll(others);
+            unknownNeighbours.clear();
+            others.forEach(this::declareCellFreeForNeighbors);
+        }
+        return common;
+    }
+
+    private Cell getMineCandidatesFittingToSecondNeighbours() {
+        Set<Cell> secondNeighbours = new HashSet<>();
+        unknownNeighbours.forEach(neighbour -> secondNeighbours.addAll(neighbour.freeNeighbours));
+        List<Cell> candidates = new ArrayList<>(unknownNeighbours);
+        for (Cell other : secondNeighbours){
+            if (other.getUnknownMines() == 1 && other.unknownNeighboursSubsetOf(unknownNeighbours)){
+                List<Cell> remaining = other.getAdditionalCells(unknownNeighbours);
+                candidates.removeAll(remaining);
+            }
+        }
+        return candidates.size() == 1 ? candidates.get(0) : null;
     }
 
     @Override
@@ -164,5 +193,9 @@ public class Cell {
                     .map(cell -> "(" + cell.getRow() + "," + cell.getCol() + ")")
                     .collect(Collectors.joining(", "))
                 + "}";
+    }
+
+    public boolean hasThreeUnknownAndNoFreeNeighbors() {
+        return !isMine && freeNeighbours.isEmpty() && unknownNeighbours.size() == 3;
     }
 }
