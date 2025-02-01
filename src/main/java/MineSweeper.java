@@ -102,22 +102,14 @@ class MineSweeper {
 
     boolean checkSingleCell(Cell cell, boolean updated) {
         System.out.println("checking cell " + cell);
-        // 1: all unknown neighbors are free cells
-        List<Cell> list = cell.allUnknownFree();
-        if (!list.isEmpty()) {
-            addEmptyFields(list);
+        // 1+2: all unknown neighbors are free cells / mines
+        if (cell.allUnknownFree() || cell.allUnknownMines()) {
+            addEmptyFields(cell.getEmptyFieldsList());
             addMines(cell.getMinesList());
             return true;
         }
-        // 2: all unknown neighbors are mines
-        list = cell.allUnknownMines();
-        if (!list.isEmpty()) {
-            addMines(list);
-            addEmptyFields(cell.getEmptyFieldsList());
-            return true;
-        }
         // 3: some empty fields identified
-        list = cell.foundNewFreesFromSubset();
+        List<Cell> list = cell.foundNewFreesFromSubset();
         if (!list.isEmpty()) {
             addEmptyFields(list);
             return true;
@@ -133,9 +125,9 @@ class MineSweeper {
         if (mine != null) {
             addMines(List.of(mine));
             addEmptyFields(cell.getEmptyFieldsList());
+            return true;
         }
-
-        // 7: no updates on this cell
+        // 6: no updates on this cell
         return updated;
     }
 

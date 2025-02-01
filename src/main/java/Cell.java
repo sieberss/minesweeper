@@ -34,10 +34,13 @@ public class Cell {
         freeNeighbours.add(cell);
     }
     public List<Cell> getMinesList(){
-        return mineNeighbours;
+        return new ArrayList<>(mineNeighbours);
     }
     public List<Cell> getEmptyFieldsList(){
-        return freeNeighbours;
+        return new ArrayList<>(freeNeighbours);
+    }
+    public List<Cell> getUnknownsList(){
+        return new ArrayList<>(unknownNeighbours);
     }
 
     public int getRow() {
@@ -95,27 +98,26 @@ public class Cell {
         unknownNeighbours.forEach(neighbour -> neighbour.setCellMine(cell));
     }
 
-    public List<Cell> allUnknownFree(){
-        List<Cell> result = new ArrayList<>();
+    public boolean allUnknownFree(){
         if (mines == mineNeighbours.size()){ // all mines are identified
-            result.addAll(unknownNeighbours);
             freeNeighbours.addAll(unknownNeighbours);
+            List<Cell> temp = new ArrayList<>(unknownNeighbours);
             unknownNeighbours.clear();
-            result.forEach(this::declareCellFreeForNeighbors);
+            temp.forEach(this::declareCellFreeForNeighbors);
             solved = true;
         }
-        return result;
+        return solved;
     }
 
-    public List<Cell> allUnknownMines(){
-        List<Cell> result = new ArrayList<>();
+    public boolean allUnknownMines(){
         if (getUnknownMines() == unknownNeighbours.size()){
-            result.addAll(unknownNeighbours);
             mineNeighbours.addAll(unknownNeighbours);
+            List<Cell> temp = new ArrayList<>(unknownNeighbours);
             unknownNeighbours.clear();
-            result.forEach(this::declareCellMineForNeighbors);
+            temp.forEach(this::declareCellMineForNeighbors);
+            solved = true;
         }
-        return result;
+        return solved;
     }
 
     public List<Cell> foundNewMinesFromSubset(){
@@ -133,17 +135,46 @@ public class Cell {
     }
 
     public List<Cell> foundNewFreesFromSubset(){
-        for (Cell other : freeNeighbours){
-            if (other.unknownNeighboursSubsetOf(unknownNeighbours)){
+        // build list of neighbors with subset of unknowns and check if one of them indicates a free cell
+        List<Cell> neigboursWithSubsetOfUnknowns = new ArrayList<>();
+        for (Cell other : freeNeighbours) {
+            if (other.unknownNeighboursSubsetOf(unknownNeighbours)) {
                 List<Cell> remaining = other.getAdditionalCells(unknownNeighbours);
-                int freeDifference = getUnknownFree() - other.getUnknownFree();
-                if (!remaining.isEmpty() && remaining.size() == freeDifference){
-                    remaining.forEach(this::setCellFree);
-                    return remaining;
+                if (!remaining.isEmpty()) {
+                    neigboursWithSubsetOfUnknowns.add(other);
+                    // check if cells in remaining must all be free
+                    int freeDifference = getUnknownFree() - other.getUnknownFree();
+                    if (remaining.size() == freeDifference){
+                        remaining.forEach(this::setCellFree);
+                        return remaining;
+                    }
+                }
+            }
+        }
+        // check if combination of two subsets indicates a free cell
+        if (neigboursWithSubsetOfUnknowns.size() >= 2){
+            for (Cell cell1 : neigboursWithSubsetOfUnknowns) {
+                for (Cell cell2 : neigboursWithSubsetOfUnknowns) {
+                    if (unknownFreeSubsetsDisjoint(cell1, cell2)) {
+                        // subtract both subsets from unknownNeighbors
+                        List<Cell> remaining = cell1.getAdditionalCells(
+                                cell2.getAdditionalCells(unknownNeighbours));
+                        int freeDifference = getUnknownFree() - cell1.getUnknownFree() - cell2.getUnknownFree();
+                        if (remaining.size() == freeDifference){
+                            remaining.forEach(this::setCellFree);
+                            return remaining;
+                        }
+                    }
                 }
             }
         }
         return new ArrayList<>();
+    }
+
+    private boolean unknownFreeSubsetsDisjoint(Cell cell1, Cell cell2) {
+        if (cell1.equals(cell2)) return false;
+        if (cell1.getUnknownsList().removeAll(cell2.getUnknownsList())) return false;
+        return !cell2.getUnknownsList().removeAll(cell1.getUnknownsList());
     }
 
     public Cell singleMineFittingToOtherCells(){
@@ -174,6 +205,10 @@ public class Cell {
         return candidates.size() == 1 ? candidates.get(0) : null;
     }
 
+    public boolean hasThreeUnknownAndNoFreeNeighbors() {
+        return !isMine && freeNeighbours.isEmpty() && unknownNeighbours.size() == 3;
+    }
+
     @Override
     public String toString() {
         return "Cell{" +
@@ -193,9 +228,5 @@ public class Cell {
                     .map(cell -> "(" + cell.getRow() + "," + cell.getCol() + ")")
                     .collect(Collectors.joining(", "))
                 + "}";
-    }
-
-    public boolean hasThreeUnknownAndNoFreeNeighbors() {
-        return !isMine && freeNeighbours.isEmpty() && unknownNeighbours.size() == 3;
     }
 }
