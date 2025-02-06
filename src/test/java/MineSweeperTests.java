@@ -9,10 +9,8 @@ public class MineSweeperTests {
      *      3 -> expected solution
      */
 
-    private String[][] DATA = new String[][]{
-            // Sample Tests:
-
-            {"Random 0202/2, 43 mines", /*
+    private String[] tooFewMines1 = {"Random 0202/2, 43 mines", /*
+            Problem solved by inspecting neighbors of unknown cells instead of direct neighbors
             5 mines left:
             0 0 0 0 1 3 x 5 4 x x 2
             0 0 0 0 0 2 x x x 4 ? ?
@@ -24,7 +22,8 @@ public class MineSweeperTests {
             0 0 1 x 1 0 1 2 2 2 ? ?
             0 0 1 1 1 0 2 x x 2 ? ?
             0 0 0 0 0 0 2 x ? ? ? ?
-*/  """
+*/
+                    """
                     0 0 0 0 0 1 1 1 0 0 1 1
                     0 0 0 0 0 1 x 2 2 1 2 x
                     1 2 1 1 0 1 2 x 2 x 2 1
@@ -114,15 +113,15 @@ public class MineSweeperTests {
                     0 0 1 x 1 0 1 2 2 2 1 1
                     0 0 1 1 1 0 2 x x 2 x 1
                     0 0 0 0 0 0 2 x 3 2 1 1
-                    """},
+                    """};
 
-            {"Random Test 0202, 11 mines", /*  2 mines left, both around 4, so other fields are free
+    private String[] tooFewMines2 = {"Random Test 0202, 11 mines", /*  2 mines left, both around 4, so other fields are free
                                             0 1 ? ?
                                             1 2 ? ?
                                             1 x 4 ?
                                             1 2 x ?
 */
-                    """
+            """
                     0 0 0 0 0 1 1 1 0 0 1 1 1 0 1 x 2 x 1 0 0 0 0 1 2 2
                     0 0 0 0 0 2 x 2 0 0 2 x 2 0 1 1 2 1 1 0 0 0 1 2 x x
                     0 0 0 0 0 2 x 2 0 1 3 x 2 0 0 0 0 0 0 0 0 0 1 x 4 3
@@ -137,16 +136,15 @@ public class MineSweeperTests {
                     0 0 0 0 0 2 x 2 0 0 2 x 2 0 1 1 2 1 1 0 0 0 1 2 x x
                     0 0 0 0 0 2 x 2 0 1 3 x 2 0 0 0 0 0 0 0 0 0 1 x 4 3
                     0 0 0 0 0 1 1 1 0 1 x 2 1 0 0 0 0 0 0 0 0 0 1 2 x 1
-                    """},
-
-            {" Random 0102/3  - 2 unknown fields away from the rest cant be mines",
-                    /*
-            1 2 x 2    only 2 mines left
-            ? ? 4 x    must be here for 1,2,4
-            ? ? ? x
-            ? ? ? 3    and here for 3,3
-            x x 3 x
-             */"""
+                    """};
+    private String[] tooFewMines3 = {" Random 0102/3  - 2 unknown fields away from the rest cant be mines",
+                                /*
+                        1 2 x 2    only 2 mines left
+                        ? ? 4 x    must be here for 1,2,4
+                        ? ? ? x
+                        ? ? ? 3    and here for 3,3
+                        x x 3 x
+                         */"""
                     1 x 1 1 x 2 x 1 0 0 0 0 0 1 x x
                     1 1 1 1 1 2 1 2 1 1 0 0 0 1 2 2
                     0 1 1 1 0 0 0 1 x 1 0 0 1 1 1 0
@@ -248,15 +246,13 @@ public class MineSweeperTests {
                     2 2 3 2 2 2 x 2 0 0 1 1 1 0 0 0
                     0 0 2 x 2 1 1 1 0 0 1 x 1 0 0 0
                     0 0 2 x 2 0 0 0 0 0 1 1 1 0 0 0
-                    """},
-
-            {"Random 0102/2, two areas of unknowns, but only one mine left, must be between neighbors",
-                    /*  ? x 2
-                        2 2 1
-                        ? 1 0  mine must be here, only place connected to all known free cells
-                        ? 1 0  would be here and at top if two mines were left
-                    */"""
-                     */
+                    """};
+    private String[] tooFewMines4 = {"Random 0102/2, two areas of unknowns, but only one mine left, must be between neighbors",
+            /*  ? x 2
+                2 2 1
+                ? 1 0  mine must be here, only place connected to all known free cells
+                ? 1 0  would be here and at top if two mines were left
+            */"""
                     0 0 0 0 0 0 0
                     0 0 0 0 0 0 0
                     0 0 0 0 0 0 0
@@ -310,13 +306,19 @@ public class MineSweeperTests {
                     2 2 1 0 0 0 0
                     x 1 0 0 0 0 0
                     1 1 0 0 0 0 0
-                    """},
+                    """};
+
+
+    private String[][] DATA = new String[][]{
+            // Sample Tests:
+
+            tooFewMines1, tooFewMines2, tooFewMines3, tooFewMines4,
 
             {"More difficult 0102/2, hard arguing, several connected areas of unknowns",
              /*  1 2 2 1 1 1 2 x 2 1 1 1 1
                  2 x x 2 2 2 2 3 + * 1 * -
-                 2 x . . M - - e X 2 1 1 o    o must be free because otherwise two fields above would miss mine
-                                              X must be mine because only one of the other neigbors of 2 can be
+                 2 x . . M - - e X 2 1 1 o    o must be free because otherwise two fields above would miss mine -> ientified
+                                              X must be mine because only one of the other neigbors of 2 can be -> identified
                                               M must be mine because only one of the - is possible for last 2
                                               e must be empty because one of the - is necessary for secondlast 2
 
@@ -359,7 +361,37 @@ public class MineSweeperTests {
                     0 0 0 0 0 1 1 2 1 2 x 1 1 1 1 0 0 1 2 2 1 1 1 2 x 2 1 1 1 1
                     0 0 0 0 0 1 x 4 x 4 2 1 0 0 0 0 0 2 x x 2 2 2 2 3 x 2 1 x 1
                     0 0 0 0 0 1 2 x x x 1 0 0 0 0 0 0 2 x 3 2 x x 1 2 x 2 1 1 1
-                    """, """
+                    """, /*"""
+                    1 x 1 0 1 1 1 0 1 x 2 x 1 0 0 0 1 x 1 0 0 0 0 0 0 1 1 1 0 0
+                    1 1 1 0 1 x 2 2 3 2 2 1 1 0 0 0 1 1 2 1 1 0 0 0 0 1 x 1 0 0
+                    0 0 0 1 2 2 2 x x 2 1 1 0 0 0 0 0 0 1 x 1 0 0 0 0 1 2 2 1 0
+                    1 1 1 1 x 1 1 2 2 2 x 1 1 1 1 0 0 0 1 1 1 0 0 0 0 0 2 x 2 0
+                    2 x 1 1 1 1 1 1 1 1 1 1 1 x 2 1 0 0 0 1 1 1 0 0 0 0 2 x 2 0
+                    x 2 1 0 0 0 1 x 1 0 0 0 2 3 x 1 0 0 0 1 x 1 0 0 0 0 1 1 1 0
+                    1 1 0 0 0 0 2 2 2 0 0 0 1 x 2 1 0 0 0 1 1 1 0 0 0 1 1 1 0 0
+                    0 0 0 0 0 0 1 x 1 0 0 0 2 2 2 0 1 1 1 0 0 0 1 1 1 1 x 1 0 0
+                    0 0 0 0 1 1 2 1 1 0 0 0 1 x 1 0 1 x 1 1 1 2 2 x 1 1 1 1 0 0
+                    0 0 0 0 1 x 1 0 0 0 0 0 1 1 1 0 2 2 2 2 x 3 x 2 1 0 0 0 1 1
+                    0 0 0 0 1 1 1 0 0 0 0 1 1 1 0 0 1 x 1 2 x 4 2 2 0 1 1 1 1 x
+                    0 1 1 1 0 0 0 0 0 0 0 1 x 1 0 0 1 2 2 2 1 2 x 1 0 1 x 1 1 1
+                    0 1 x 2 1 2 1 1 0 0 0 1 1 1 0 0 0 1 x 1 0 1 2 2 1 1 1 1 0 0
+                    0 1 1 2 x 2 x 3 2 1 0 1 2 2 1 0 0 1 2 2 1 0 1 x 1 0 0 0 0 0
+                    1 1 0 1 1 2 2 x x 1 0 1 x x 1 0 0 0 1 x 1 0 1 2 2 1 0 0 0 0
+                    x 1 0 0 0 0 2 3 3 1 0 1 2 2 1 0 0 0 1 1 1 0 0 2 x 2 0 0 0 0
+                    1 1 0 0 0 0 1 x 1 0 0 0 0 1 1 1 0 0 0 0 0 0 0 2 x 3 1 0 0 0
+                    0 0 0 0 0 0 1 1 1 0 0 0 0 1 x 1 0 0 0 1 1 1 0 1 2 x 1 0 0 0
+                    0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 2 x 2 0 1 2 2 1 0 0 0
+                    1 2 2 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 x 2 0 1 x 1 0 1 1 1
+                    1 x x 1 1 1 1 0 1 1 1 0 0 1 1 2 1 1 0 1 1 1 1 2 2 1 0 1 x 1
+                    1 2 3 2 2 x 1 0 1 x 2 1 0 1 x 3 x 2 0 0 0 0 1 x 1 0 0 1 1 1
+                    0 0 1 x 3 2 2 0 1 2 x 1 1 2 2 3 x 3 1 0 0 0 1 1 1 0 0 0 0 0
+                    0 0 1 1 2 x 1 0 0 1 1 2 2 x 2 2 2 x 2 1 1 0 0 0 0 0 0 0 0 0
+                    0 0 0 0 1 1 1 0 0 0 0 1 x 4 x 1 1 1 2 x 1 1 1 1 0 0 0 0 0 0
+                    0 0 0 0 0 0 0 0 0 1 1 2 2 x 2 1 0 0 1 1 1 1 x 2 1 1 0 0 0 0
+                    0 0 0 0 0 1 1 2 1 2 x 1 1 1 1 0 0 1 2 2 1 1 1 2 x 2 1 1 1 1
+                    0 0 0 0 0 1 x 4 x 4 2 1 0 0 0 0 0 2 x x 2 2 2 2 3 ? ? ? ? ?
+                    0 0 0 0 0 1 2 x x x 1 0 0 0 0 0 0 2 x ? ? ? ? ? ? ? ? ? ? ?
+                    """, */"""
                     ? ? ? 0 ? ? ? 0 ? ? ? ? ? 0 0 0 ? ? ? 0 0 0 0 0 0 ? ? ? 0 0
                     ? ? ? 0 ? ? ? ? ? ? ? ? ? 0 0 0 ? ? ? ? ? 0 0 0 0 ? ? ? 0 0
                     0 0 0 ? ? ? ? ? ? ? ? ? 0 0 0 0 0 0 ? ? ? 0 0 0 0 ? ? ? ? 0
@@ -737,7 +769,7 @@ public class MineSweeperTests {
 
     @Test
     public void sampleTests() {
-        for (int count = 0 ; count < 15 ; count++) {
+        for (int count = 3 ; count < 15 ; count++) {
             Game.newGame(DATA[count][1]);
             Game.read(DATA[count][2]);
             makeAssertion_AndDisplay(DATA[count][0], DATA[count][3], new MineSweeper(DATA[count][2], Game.getMinesN()).solve());

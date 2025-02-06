@@ -103,7 +103,7 @@ class MineSweeper {
     boolean checkSingleCell(Cell cell, boolean updated) {
         System.out.println("checking cell " + cell);
         // 1+2: all unknown neighbors are free cells / mines
-        if (cell.allUnknownFree() || cell.allUnknownMines()) {
+        if (cell.allUnknownAreFree() || cell.allUnknownAreMines()) {
             addEmptyFields(cell.getEmptyFieldsList());
             addMines(cell.getMinesList());
             return true;
