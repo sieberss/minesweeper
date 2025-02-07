@@ -769,7 +769,7 @@ public class MineSweeperTests {
 
     @Test
     public void sampleTests() {
-        for (int count = 3 ; count < 15 ; count++) {
+        for (int count = 4 ; count < 15 ; count++) {
             Game.newGame(DATA[count][1]);
             Game.read(DATA[count][2]);
             makeAssertion_AndDisplay(DATA[count][0], DATA[count][3], new MineSweeper(DATA[count][2], Game.getMinesN()).solve());

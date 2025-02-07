@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 public class Cell {
     private final int row;
     private final int col;
-    private boolean solved;
     private boolean isMine = false;
     private int mines = -1;
     private final List<Cell> freeNeighbours = new ArrayList<>();
@@ -20,7 +19,6 @@ public class Cell {
         switch (boardEntry) {
             case "x":
                 isMine = true;
-                solved = true;
                 break;
             case "?":
                 break;
@@ -88,8 +86,8 @@ public class Cell {
         declareCellFreeForNeighbors(this);
     }
 
-    public boolean isSolved() {
-        return solved;
+    public boolean isFree(){
+        return mines != -1;
     }
 
     public int getUnknownMines() {
@@ -142,9 +140,9 @@ public class Cell {
             List<Cell> temp = new ArrayList<>(unknownNeighbours);
             unknownNeighbours.clear();
             temp.forEach(this::declareCellFreeForNeighbors);
-            solved = true;
+            return true;
         }
-        return solved;
+        return false;
     }
 
     public boolean allUnknownAreMines() {
@@ -153,9 +151,9 @@ public class Cell {
             List<Cell> temp = new ArrayList<>(unknownNeighbours);
             unknownNeighbours.clear();
             temp.forEach(this::declareCellMineForNeighbors);
-            solved = true;
+            return true;
         }
-        return solved;
+        return false;
     }
 
     public List<Cell> foundNewMinesFromSubset() {
@@ -246,7 +244,6 @@ public class Cell {
             return null;
         Cell common = getMineCandidatesFittingToSecondNeighbours();
         if (common != null) {
-            solved = true;
             setCellMine(common);
             List<Cell> others = new ArrayList<>(unknownNeighbours);
             freeNeighbours.addAll(others);
@@ -268,7 +265,7 @@ public class Cell {
         return candidates.size() == 1 ? candidates.get(0) : null;
     }
 
-    private Set<Cell> getFreeNeighboursOfUnknowns() {
+    public Set<Cell> getFreeNeighboursOfUnknowns() {
         Set<Cell> secondNeighbours = new HashSet<>();
         unknownNeighbours.forEach(unknown -> secondNeighbours.addAll(unknown.freeNeighbours));
         return secondNeighbours;
