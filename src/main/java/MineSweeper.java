@@ -103,8 +103,8 @@ class MineSweeper {
         boolean updated;
         do {
             updated = didCellUpdate();
-            System.out.println(getBoardString());
-            System.out.println(foundMines.size() + " mines of " + totalMines + " discovered: " + foundMines);
+            //System.out.println(getBoardString());
+            //System.out.println(foundMines.size() + " mines of " + totalMines + " discovered: " + foundMines);
         }
         while (totalMines > foundMines.size() && updated);
     }
@@ -124,7 +124,7 @@ class MineSweeper {
     }
 
     boolean updatedSingleCell(Cell cell, boolean updated) {
-        System.out.println("checking cell " + cell);
+        //System.out.println("checking cell " + cell);
         // 1+2: all unknown neighbors are free cells / mines
         if (cell.allUnknownAreFree() || cell.allUnknownAreMines()) {
             addEmptyFields(cell.getEmptyFieldsList());
@@ -144,20 +144,12 @@ class MineSweeper {
             addMines(list);
             return true;
         }
-        // 5: remaining mine also belongs to several non-neighbors
-        /* may be unnecessary
-        Cell mine = cell.singleMineFittingToOtherCells();
-        if (mine != null) {
-            addMines(List.of(mine));
-            addEmptyFields(cell.getEmptyFieldsList());
-            return true;
-        }*/
-        // 6: no updates on this cell
+        // 5: no updates on this cell
         return updated;
     }
 
     private void addMines(List<Cell> list) {
-        System.out.println("found mines: " + list);
+        //System.out.println("found mines: " + list);
         for (Cell found : list) {
             uncompletedCells.remove(found);
             board[found.getRow()][found.getCol()] = "x";
@@ -169,11 +161,11 @@ class MineSweeper {
     private void addEmptyFields(List<Cell> list) {
         for (Cell found : list) {
             if (uncompletedCells.contains(found)) {
-                System.out.println("opening empty field " + found);
+                //System.out.println("opening empty field " + found);
                 int mines = Game.open(found.getRow(), found.getCol());
                 board[found.getRow()][found.getCol()] = "" + mines;
                 found.setToFree(mines);
-                System.out.println(mines + " mines around empty field " + found);
+                //System.out.println(mines + " mines around empty field " + found);
             }
         }
     }

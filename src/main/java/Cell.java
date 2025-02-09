@@ -235,32 +235,6 @@ public class Cell {
         return !cell2.getUnknownsList().removeAll(cell1.getUnknownsList());
     }
 
-  /*  public Cell singleMineFittingToOtherCells() {
-        if (getUnknownMines() != 1)
-            return null;
-        Cell common = getMineCandidatesFittingToSecondNeighbours();
-        if (common != null) {
-            setCellMine(common);
-            List<Cell> others = new ArrayList<>(unknownNeighbours);
-            freeNeighbours.addAll(others);
-            unknownNeighbours.clear();
-            others.forEach(this::declareCellFreeForNeighbors);
-        }
-        return common;
-    }
-
-    private Cell getMineCandidatesFittingToSecondNeighbours() {
-        Set<Cell> secondNeighbours = getFreeNeighboursOfUnknowns();
-        List<Cell> candidates = new ArrayList<>(unknownNeighbours);
-        for (Cell other : secondNeighbours) {
-            if (other.getUnknownMines() == 1 && other.unknownNeighboursSubsetOf(unknownNeighbours)) {
-                List<Cell> remaining = other.getAdditionalCells(unknownNeighbours);
-                candidates.removeAll(remaining);
-            }
-        }
-        return candidates.size() == 1 ? candidates.get(0) : null;
-    }*/
-
     public Set<Cell> getFreeNeighboursOfUnknowns() {
         Set<Cell> secondNeighbours = new HashSet<>();
         unknownNeighbours.forEach(unknown -> secondNeighbours.addAll(unknown.freeNeighbours));
