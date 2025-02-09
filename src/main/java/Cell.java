@@ -104,10 +104,6 @@ public class Cell {
         return result;
     }
 
-    public boolean unknownNeighboursSubsetOf(List<Cell> list) {
-        return new HashSet<>(list).containsAll(unknownNeighbours);
-    }
-
     public void setCellMine(Cell cell) {
         if (unknownNeighbours.contains(cell)) {
             unknownNeighbours.remove(cell);
@@ -239,7 +235,7 @@ public class Cell {
         return !cell2.getUnknownsList().removeAll(cell1.getUnknownsList());
     }
 
-    public Cell singleMineFittingToOtherCells() {
+  /*  public Cell singleMineFittingToOtherCells() {
         if (getUnknownMines() != 1)
             return null;
         Cell common = getMineCandidatesFittingToSecondNeighbours();
@@ -263,16 +259,12 @@ public class Cell {
             }
         }
         return candidates.size() == 1 ? candidates.get(0) : null;
-    }
+    }*/
 
     public Set<Cell> getFreeNeighboursOfUnknowns() {
         Set<Cell> secondNeighbours = new HashSet<>();
         unknownNeighbours.forEach(unknown -> secondNeighbours.addAll(unknown.freeNeighbours));
         return secondNeighbours;
-    }
-
-    public boolean hasThreeUnknownAndNoFreeNeighbors() {
-        return !isMine && freeNeighbours.isEmpty() && unknownNeighbours.size() == 3;
     }
 
     @Override

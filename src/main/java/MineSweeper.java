@@ -35,17 +35,6 @@ class MineSweeper {
         }
     }
 
-    private void addNeighbours(int i, int j) {
-        List<Cell> neighbours = getNeighbourCellsOf(i, j);
-        for (Cell neighbour : neighbours) {
-            switch(board[neighbour.getRow()][neighbour.getCol()]){
-                case "x": cells[i][j].addMineNeighbour(neighbour); break;
-                case "?": cells[i][j].addUnknownNeighbour(neighbour); break;
-                default:  cells[i][j].addFreeNeighbour(neighbour); break;
-            }
-        }
-    }
-
     public String solve() {
         iterateCellChecking();
         if (totalMines > foundMines.size())
@@ -68,22 +57,42 @@ class MineSweeper {
                 else unknownsWithSeveralFreeNeighbors.add(cell);
             }
         }
+        return getResult(remainingMines, uncompletedFree, unknownsWithSeveralFreeNeighbors, unknownsWithOnlyOneFreeNeighbor, unreachableCells);
+    }
+
+    private String getResult(int remainingMines, List<Cell> uncompletedFree, List<Cell> unknownsWithSeveralFreeNeighbors, List<Cell> unknownsWithOnlyOneFreeNeighbor, List<Cell> unreachableCells) {
         if (hasUndecidableAlternative(uncompletedFree)) return "?";
-        List<Cell> minimalMineList = getMinimalMineList(uncompletedFree);
-        if (minimalMineList.size() == remainingMines)
-            return getResultWithMinimalMineList();
-        if (minimalMineList.size() < remainingMines && !unreachableCells.isEmpty())
+        SolutionSuggestion potentialSolution = SolutionSuggestion.suggestMinimalMineSolution(uncompletedFree, unknownsWithSeveralFreeNeighbors);
+        // solution only has minimal set of mines
+        if (potentialSolution.mineNumber() == remainingMines)
+            return getSuggestedSolution(potentialSolution, unreachableCells);
+        // additional mines could be in unreachable cells or non-minimal solution for others
+        if (potentialSolution.mineNumber() < remainingMines && !unreachableCells.isEmpty())
             return "?";
-        if (unknownsWithOnlyOneFreeNeighbor.size() == 1 && remainingMines == minimalMineList.size() + 1)
+        // no unreachable cells, but only one possible place for an additional mine
+        if (unknownsWithOnlyOneFreeNeighbor.size() == 1 && remainingMines == potentialSolution.mineNumber() + 1)
             return getResultWithMine(unknownsWithOnlyOneFreeNeighbor.get(0));
         return "?";
+    }
+
+    private String getResultWithMine(Cell cell) {
+        addMines(List.of(cell));
+        return solve();
+    }
+
+    private String getSuggestedSolution(SolutionSuggestion suggestion, List<Cell> unreachableCells) {
+        addMines(suggestion.sureMines());
+        addEmptyFields(unreachableCells);
+        return solve();
     }
 
     private boolean hasUndecidableAlternative(List<Cell> uncompletedFree) {
         for (Cell cell : uncompletedFree) {
             List<Cell> unknownNeighbours = cell.getUnknownsList();
+            Set<Cell> unknownsConnectedToOtherFreeCells = new HashSet<>();
             Set<Cell> cellsAroundUnknownNeighbours = cell.getFreeNeighboursOfUnknowns();
-            if (unknownNeighbours.size() == cellsAroundUnknownNeighbours.size())
+            cellsAroundUnknownNeighbours.forEach(other -> unknownsConnectedToOtherFreeCells.addAll(other.getUnknownsList()));
+            if (unknownNeighbours.size() == unknownsConnectedToOtherFreeCells.size())
                 return true;
         }
         return false;
@@ -136,12 +145,13 @@ class MineSweeper {
             return true;
         }
         // 5: remaining mine also belongs to several non-neighbors
+        /* may be unnecessary
         Cell mine = cell.singleMineFittingToOtherCells();
         if (mine != null) {
             addMines(List.of(mine));
             addEmptyFields(cell.getEmptyFieldsList());
             return true;
-        }
+        }*/
         // 6: no updates on this cell
         return updated;
     }
@@ -172,6 +182,17 @@ class MineSweeper {
         return Arrays.stream(board)
                 .map(line -> String.join(" ", line))
                 .collect(Collectors.joining("\n"));
+    }
+
+    private void addNeighbours(int i, int j) {
+        List<Cell> neighbours = getNeighbourCellsOf(i, j);
+        for (Cell neighbour : neighbours) {
+            switch(board[neighbour.getRow()][neighbour.getCol()]){
+                case "x": cells[i][j].addMineNeighbour(neighbour); break;
+                case "?": cells[i][j].addUnknownNeighbour(neighbour); break;
+                default:  cells[i][j].addFreeNeighbour(neighbour); break;
+            }
+        }
     }
 
     private List<Cell> getNeighbourCellsOf(int row, int col) {

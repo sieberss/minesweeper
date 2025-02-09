@@ -9,7 +9,7 @@ public class MineSweeperTests {
      *      3 -> expected solution
      */
 
-    private String[] tooFewMines1 = {"Random 0202/2, 43 mines", /*
+    private final String[] tooFewMines1 = {"Random 0202/2, 43 mines", /*
             Problem solved by inspecting neighbors of unknown cells instead of direct neighbors
             5 mines left:
             0 0 0 0 1 3 x 5 4 x x 2
@@ -115,7 +115,7 @@ public class MineSweeperTests {
                     0 0 0 0 0 0 2 x 3 2 1 1
                     """};
 
-    private String[] tooFewMines2 = {"Random Test 0202, 11 mines", /*  2 mines left, both around 4, so other fields are free
+    private final String[] tooFewMines2 = {"Random Test 0202, 11 mines", /*  2 mines left, both around 4, so other fields are free
                                             0 1 ? ?
                                             1 2 ? ?
                                             1 x 4 ?
@@ -137,7 +137,7 @@ public class MineSweeperTests {
                     0 0 0 0 0 2 x 2 0 1 3 x 2 0 0 0 0 0 0 0 0 0 1 x 4 3
                     0 0 0 0 0 1 1 1 0 1 x 2 1 0 0 0 0 0 0 0 0 0 1 2 x 1
                     """};
-    private String[] tooFewMines3 = {" Random 0102/3  - 2 unknown fields away from the rest cant be mines",
+    private final String[] tooFewMines3 = {" Random 0102/3  - 2 unknown fields away from the rest cant be mines",
                                 /*
                         1 2 x 2    only 2 mines left
                         ? ? 4 x    must be here for 1,2,4
@@ -247,7 +247,7 @@ public class MineSweeperTests {
                     0 0 2 x 2 1 1 1 0 0 1 x 1 0 0 0
                     0 0 2 x 2 0 0 0 0 0 1 1 1 0 0 0
                     """};
-    private String[] tooFewMines4 = {"Random 0102/2, two areas of unknowns, but only one mine left, must be between neighbors",
+    private final String[] tooFewMines4 = {"Random 0102/2, two areas of unknowns, but only one mine left, must be between neighbors",
             /*  ? x 2
                 2 2 1
                 ? 1 0  mine must be here, only place connected to all known free cells
@@ -309,7 +309,7 @@ public class MineSweeperTests {
                     """};
 
 
-    private String[][] DATA = new String[][]{
+    private final String[][] DATA = new String[][]{
             // Sample Tests:
 
             tooFewMines1, tooFewMines2, tooFewMines3, tooFewMines4,
@@ -752,14 +752,10 @@ public class MineSweeperTests {
                     "?"}};
 
 
-    private void makeAssertion_AndDisplay(String expected, String actual){
-        makeAssertion_AndDisplay("", expected, actual);
-    }
-
     private void makeAssertion_AndDisplay(String message, String expected, String actual){
         expected = expected.trim();
         if (!expected.equals(actual)) {
-            if (message.equals("")) message = "Failed test!!";
+            if (message.isEmpty()) message = "Failed test!!";
             System.out.println(" \n" + message + "\n\nExpected:\n" + expected + "\n\nBut was:\n" + actual);
             System.out.println("length expected: " + expected.length() + ", actual: " + actual.length());
         }
@@ -769,7 +765,7 @@ public class MineSweeperTests {
 
     @Test
     public void sampleTests() {
-        for (int count = 4 ; count < 15 ; count++) {
+        for (int count = 0 ; count < 15 ; count++) {
             Game.newGame(DATA[count][1]);
             Game.read(DATA[count][2]);
             makeAssertion_AndDisplay(DATA[count][0], DATA[count][3], new MineSweeper(DATA[count][2], Game.getMinesN()).solve());
