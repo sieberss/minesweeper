@@ -30,7 +30,7 @@ class MineSweeper {
         // tell cells about their neighbors
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[0].length; j++) {
-                addNeighbours(i, j);
+                addNeighbourDataToCell(i, j);
             }
         }
     }
@@ -56,45 +56,41 @@ class MineSweeper {
             }
         }
         int minMines = remainingMines - unreachableCells.size();
-        List<List<Cell>> possibleMineLists = CombinationTest.getPossibleMineLists(uncompletedFree, reachableUnknowns, minMines, remainingMines);
-        System.out.println("Possible solutions:");
-        possibleMineLists.forEach(list -> System.out.println(list.size() + " " + list));
-        return getResult(remainingMines, possibleMineLists, reachableUnknowns, unreachableCells);
+        return getResultForRemainingMines(minMines, remainingMines, reachableUnknowns, uncompletedFree, unreachableCells);
     }
 
-    private String getResult(int remainingMines, List<List<Cell>> possibleMineLists, List<Cell> reachableUnknowns, List<Cell> unreachableCells) {
+    private String getResultForRemainingMines(int minMines, int remainingMines, List<Cell> reachableUnknowns, List<Cell> uncompletedFree, List<Cell> unreachableCells) {
+        List<List<Cell>> possibleMineLists = CombinationTest.getPossibleMineLists(uncompletedFree, reachableUnknowns, minMines, remainingMines);
         int listCount = possibleMineLists.size();
-        List<Cell> shortest = possibleMineLists.get(0);
         List<Cell> longest = possibleMineLists.get(listCount - 1);
-        int maxMines = longest.size();/*
-        // only 1 possible solution. Set mines from solution and retry solving
-        if (listCount == 1) {
-            addMines(shortest);
-            return solve();
-        }*/
+        int maxMines = longest.size();
         List<Cell> sureMines = CombinationTest.getSureMines(possibleMineLists, reachableUnknowns);
         List<Cell> sureFree = CombinationTest.getSureFree(possibleMineLists, reachableUnknowns);
         // no new information from possibleMineLists
         if (sureMines.isEmpty() && sureFree.isEmpty()) {
-            if (!unreachableCells.isEmpty() && unreachableCells.size() + maxMines == remainingMines) {
-                // any solution requires all unreachable cells to be mines. Set them and retry solving
-                addMines(unreachableCells);
-                return solve();
-            }
-            return "?";
+            return getResultDependingOnUnreachableCells(remainingMines, maxMines, unreachableCells);
         }
         // add found fields and retry solving
-        addMines(sureMines);
-        addEmptyFields(sureFree);
-        return solve();
+        else {
+            addMines(sureMines);
+            addEmptyFields(sureFree);
+            return solve();
+        }
+    }
+
+    private String getResultDependingOnUnreachableCells(int remainingMines, int maxMines, List<Cell> unreachableCells) {
+        // solution possible when all unreachable cells are mines. Set them and retry solving
+        if (!unreachableCells.isEmpty() && unreachableCells.size() + maxMines == remainingMines) {
+            addMines(unreachableCells);
+            return solve();
+        }
+        else return "?";
     }
 
     private void iterateCellChecking() {
         boolean updated;
         do {
             updated = didCellUpdate();
-            System.out.println(getBoardString());
-            System.out.println(foundMines.size() + " mines of " + totalMines + " discovered: " + foundMines);
         }
         while (totalMines > foundMines.size() && updated);
     }
@@ -114,7 +110,6 @@ class MineSweeper {
     }
 
     boolean updatedSingleCell(Cell cell, boolean updated) {
-        System.out.println("checking cell " + cell);
         // 1+2: all unknown neighbors are free cells / mines
         if (cell.allUnknownAreFree() || cell.allUnknownAreMines()) {
             addEmptyFields(cell.getEmptyFieldsList());
@@ -139,7 +134,6 @@ class MineSweeper {
     }
 
     private void addMines(List<Cell> list) {
-        System.out.println("found mines: " + list);
         for (Cell found : list) {
             uncompletedCells.remove(found);
             board[found.getRow()][found.getCol()] = "x";
@@ -151,11 +145,9 @@ class MineSweeper {
     private void addEmptyFields(List<Cell> list) {
         for (Cell found : list) {
             if (uncompletedCells.contains(found)) {
-                System.out.println("opening empty field " + found);
                 int mines = Game.open(found.getRow(), found.getCol());
                 board[found.getRow()][found.getCol()] = "" + mines;
                 found.setToFree(mines);
-                System.out.println(mines + " mines around empty field " + found);
             }
         }
     }
@@ -166,7 +158,7 @@ class MineSweeper {
                 .collect(Collectors.joining("\n"));
     }
 
-    private void addNeighbours(int i, int j) {
+    private void addNeighbourDataToCell(int i, int j) {
         List<Cell> neighbours = getNeighbourCellsOf(i, j);
         for (Cell neighbour : neighbours) {
             switch(board[neighbour.getRow()][neighbour.getCol()]){

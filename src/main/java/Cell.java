@@ -98,7 +98,7 @@ public class Cell {
         return unknownNeighbours.size() - getUnknownMines();
     }
 
-    public List<Cell> getAdditionalCells(List<Cell> list) {
+    public List<Cell> getCellsNotInUnknownsList(List<Cell> list) {
         List<Cell> result = new ArrayList<>(list);
         result.removeAll(unknownNeighbours);
         return result;
@@ -156,7 +156,7 @@ public class Cell {
         // build list of neighbors with common unknowns and check if one of them indicates a free cell
         List<Cell> neigboursWithCommonUnknowns = new ArrayList<>();
         for (Cell other : getFreeNeighboursOfUnknowns()) {
-            List<Cell> uncommon = other.getAdditionalCells(unknownNeighbours);
+            List<Cell> uncommon = other.getCellsNotInUnknownsList(unknownNeighbours);
             if (!uncommon.isEmpty()) {
                 neigboursWithCommonUnknowns.add(other);
                 if (allUncommonMustBeMinesRespFree(uncommon, other, true)) {
@@ -171,8 +171,8 @@ public class Cell {
                 for (Cell cell2 : neigboursWithCommonUnknowns) {
                     if (unknownsAreDisjoint(cell1, cell2)) {
                         // subtract both subsets from unknownNeighbors
-                        List<Cell> cellsInNoneOfSubsets = cell1.getAdditionalCells(
-                                cell2.getAdditionalCells(unknownNeighbours));
+                        List<Cell> cellsInNoneOfSubsets = cell1.getCellsNotInUnknownsList(
+                                cell2.getCellsNotInUnknownsList(unknownNeighbours));
                         int mineDifference = getUnknownMines() - getMaxCommonMines(cell1) - getMaxCommonMines(cell2);
                         if (cellsInNoneOfSubsets.size() == mineDifference) {
                             cellsInNoneOfSubsets.forEach(this::setCellMine);
@@ -189,7 +189,7 @@ public class Cell {
         // build list of neighbors with common unknowns and check if one of them indicates a free cell
         List<Cell> neigboursWithCommonUnknowns = new ArrayList<>();
         for (Cell other : getFreeNeighboursOfUnknowns()) {
-            List<Cell> uncommon = other.getAdditionalCells(unknownNeighbours);
+            List<Cell> uncommon = other.getCellsNotInUnknownsList(unknownNeighbours);
             if (!uncommon.isEmpty()) {
                 neigboursWithCommonUnknowns.add(other);
                 if (allUncommonMustBeMinesRespFree(uncommon, other, false)) {
@@ -204,8 +204,8 @@ public class Cell {
                 for (Cell cell2 : neigboursWithCommonUnknowns) {
                     if (unknownsAreDisjoint(cell1, cell2)) {
                         // subtract both subsets from unknownNeighbors
-                        List<Cell> cellsInNoneOfSubsets = cell1.getAdditionalCells(
-                                cell2.getAdditionalCells(unknownNeighbours));
+                        List<Cell> cellsInNoneOfSubsets = cell1.getCellsNotInUnknownsList(
+                                cell2.getCellsNotInUnknownsList(unknownNeighbours));
                         int freeDifference = getUnknownFree() - getMaxCommonFree(cell1) - getMaxCommonFree(cell2);
                         if (cellsInNoneOfSubsets.size() == freeDifference) {
                             cellsInNoneOfSubsets.forEach(this::setCellFree);

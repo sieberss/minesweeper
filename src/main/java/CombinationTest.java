@@ -68,12 +68,4 @@ public class CombinationTest {
         return sureFree;
     }
 
-    public static List<Cell> getSingleListOfSize(int remainingMines, List<List<Cell>> possibleMineLists) {
-        List<List<Cell>> mineListsWithRightLength = possibleMineLists.stream()
-                .filter(list -> list.size() == remainingMines)
-                .toList();
-        if (mineListsWithRightLength.size() == 1)
-            return mineListsWithRightLength.get(0);
-        return null;
-    }
 }
